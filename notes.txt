@@ -1,0 +1,26 @@
+what sort of stocks would this algorithm use: (always up to be changed)
+    - stocks which are active (high volume)
+    - this is because this algorithm would benefit from MORE volatile stocks however
+    stocks such as pennies may not be ideal as they would either not move at all or move massively, and
+    both of these scenarios present the potential for large losses as the spreads would be so large.
+
+what sort of metrics would be used?
+    - all metrics have to be discretised in some way or another:
+    a metric like RSI is fine because it only has 1000 values (assuming 1dp)
+    a metric like price however is not because it can go infinitely up.
+    - to discretise a continuous metric like price
+        - i can put it in relation to something else such as ema 20: above/below etc.
+
+    - compound metrics?
+        - e.g above/below
+
+what timeframe?
+    trading at least on an hourly basis to avoid over-imposition of commission costs and because
+    at mass certain orders simply cannot be filled in less than 15 mins+
+
+    data can be any size theoretically but I will start with hourly as well
+stock chosen for testing as of 23/06/21:
+    - F Ford
+    - clear upward trend for year with no signficant peaks
+    - $15 stock price
+    - avg volume > 2 million shares
