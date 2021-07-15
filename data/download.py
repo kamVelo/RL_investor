@@ -1,6 +1,6 @@
 import requests as rq
 from time import sleep
-symbol = 'AAPL'
+symbol = 'TSM'
 urls = {
     'STOCH' : 'https://www.alphavantage.co/query?function=STOCH&symbol=F&interval=60min&apikey=dsfdo&outputsize=full&datatype=csv',
     '20EMA' : 'https://www.alphavantage.co/query?function=EMA&symbol=F&interval=60min&time_period=20&series_type=close&apikey=sdfsf&outputsize=full&datatype=csv',
