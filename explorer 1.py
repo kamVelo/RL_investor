@@ -3,7 +3,7 @@ from random import uniform, choice
 from copy import deepcopy
 from matplotlib import pyplot as plt
 # getting data from the files
-symbol = 'TSM'
+symbol = 'F'
 dset = pd.read_csv("data/"+symbol+"_hourly.csv").iloc[::-1].iloc[:, 1:]
 dset.index = range(0, len(dset))
 
@@ -22,7 +22,13 @@ RSI.index = range(0, len(RSI))
 stoch = pd.read_csv("data/"+symbol+"_STOCH.csv").iloc[::-1].iloc[:, 1:]
 stoch.index = range(0, len(stoch))
 
-sets = [dset, ema20, ema50, ema200, RSI]
+bbands = pd.read_csv("data/"+symbol+"_bbands.csv").iloc[::-1].iloc[:, 1:]
+bbands.index = range(0, len(bbands))
+
+VWAP = pd.read_csv("data/" + symbol + "_vwap.csv").iloc[::-1].iloc[:, 1:]
+VWAP.index = range(0, len(VWAP))
+
+sets = [dset, ema20, ema50, ema200, RSI, bbands, VWAP]
 sets = [len(x) for x in sets]
 min_idx = min(sets)
 
@@ -32,17 +38,30 @@ ema50 = ema50.iloc[:min_idx, :].values
 ema200 = ema200.iloc[:min_idx, :].values
 RSI = RSI.iloc[:min_idx, :].values
 stoch = stoch.iloc[:min_idx, :].values
+bbands = bbands.iloc[:min_idx, :].values
+VWAP = VWAP.iloc[:min_idx, :].values
+
+
 cab_20, cab_50, cab_200 = [], [], []  # above or below
 ab_20_50, ab_50_200 = [], []  # ema 20 above or below ema 50, ema 50 above or below ema200
 RSI_ab_80, RSI_be_20 = [], []
 k_ab_d = []
 
 c_25_l, c_75_h = [], []
+
+c_75_upperband, c_25_lowerband = [], []
+v_ab_c = []
+
 decisions = []  # list of optimal decisions
 for index, row in dset.iterrows():
     close = float(row["close"])
     high = float(row['high'])
     low = float(row['low'])
+
+    lowerband = bbands[index][0]
+    upperband = bbands[index][2]
+
+    vwap = VWAP[index]
     try:
         fut_close = dset.loc[index+1]["close"]
         decisions.append(int(fut_close > close))
@@ -64,11 +83,17 @@ for index, row in dset.iterrows():
     RSI_be_20.append(int(rsi < 20))
     k_ab_d.append(int(k > d))
     try:
-        c_75_h.append(int(((close-low)/(high-low)) > 0.75))  # if close is 75% or more towards the high
-        c_25_l.append(int(((close-low)/(high-low)) < 0.25))  # if close is 25% or less towards the low
+        travel  = (close-low)/(high-low) # perentage that the price is between high and low
+        c_75_h.append(int(travel > 0.75))  # if close is 75% or more towards the high
+        c_25_l.append(int(travel < 0.25))  # if close is 25% or less towards the low
     except ZeroDivisionError:
         c_75_h.append(1)
         c_25_l.append(1)
+    dist_bet_band = (close-lowerband)/(upperband-lowerband)
+    c_75_upperband.append(int(dist_bet_band > 0.75))
+    c_25_lowerband.append(int(dist_bet_band > 0.25))
+
+    v_ab_c.append(int(vwap>close))
 dset = dset.iloc[:, 3:4]
 dset["close > ema20"] = cab_20
 dset["close > ema50"] = cab_50
@@ -78,8 +103,10 @@ dset["ema50 > ema200"] = ab_50_200
 dset["RSI < 20"] = RSI_be_20
 dset["RSI > 80"] = RSI_ab_80
 dset["k > d"] = k_ab_d
-dset["close 75% of high"] = c_75_h
-dset["close 25% away from low"] = c_25_l
+dset["close 75% of candle high"] = c_75_h
+dset["close 25% away from candle low"] = c_25_l
+dset["close 75% to upper bollinger band"] = c_75_upperband
+dset["close 25% to lower bollinger band"] = c_25_lowerband
 closes = list(dset["close"])
 del dset["close"]  # leaves us only with above/below information.
 
