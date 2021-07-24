@@ -212,7 +212,7 @@ alpha = 0.5  # alpha is the learning rate
 explore_count = 0
 exploit_count = 0
 rand_count = 0
-episodes = 500
+episodes = 100
 exploit_balances = []
 end_balances = []
 prev_seen = 0
@@ -293,6 +293,7 @@ print(f"Number of reencountered situations: {prev_seen}")
 print(f"Minimum Balance: {min(end_balances)} | Maximum Balance: {max(end_balances)} | Average Balance: {sum(end_balances)/len(end_balances)}")
 print("When Exploiting")
 print(f"Minimum Balance: {min(exploit_balances)} | Maximum Balance: {max(exploit_balances)} | Average Balance: {sum(exploit_balances)/len(exploit_balances)}")
+print(f"position of max balance: {exploit_balances.index(max(exploit_balances))}/{len(exploit_balances)}")
 baseline = 0
 moving_averages = []
 for bal in exploit_balances:
