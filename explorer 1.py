@@ -13,7 +13,7 @@ ema20.index = range(0, len(ema20))
 ema50 = pd.read_csv("data/"+symbol+"_50EMA.csv").iloc[::-1].iloc[:, 1:]
 ema50.index = range(0, len(ema50))
 
-ema200 = pd.read_csv("data/"+symbol+"_200EMA.csv").iloc[::-1].iloc[:, 1:]
+ema200 = pd.read_csv("data/"+symbol+"_200SMA.csv").iloc[::-1].iloc[:, 1:]
 ema200.index = range(0, len(ema200))
 
 RSI = pd.read_csv("data/"+symbol+"_RSI.csv").iloc[::-1].iloc[:, 1:]
@@ -97,9 +97,9 @@ for index, row in dset.iterrows():
 dset = dset.iloc[:, 3:4]
 dset["close > ema20"] = cab_20
 dset["close > ema50"] = cab_50
-dset["close > ema200"] = cab_200
+dset["close > sma200"] = cab_200
 dset["ema20 > ema50"] = ab_20_50
-dset["ema50 > ema200"] = ab_50_200
+dset["ema50 > sma200"] = ab_50_200
 dset["RSI < 20"] = RSI_be_20
 dset["RSI > 80"] = RSI_ab_80
 dset["k > d"] = k_ab_d
@@ -136,8 +136,6 @@ for index, row in dset.iterrows():
     # not close bc obviously you can't close a position that isn't open
     environment.append(list(row))
 
-indexer = []
-[indexer.append(str(state)) for state in environment if str(state) not in indexer]
 Q = pd.DataFrame(columns=["Do Nothing", "Buy", "Short", "Close"])
 
 
@@ -146,6 +144,7 @@ def r(state, s_idx, action, bal=False):
     curr_close = closes[s_idx]
     next_close = closes[s_idx+1]
     if action == 0:  # i.e hold
+        reward += -1
         if state[-1] == 0:
             pass
         elif state[-1] == 1:
@@ -172,7 +171,7 @@ def r(state, s_idx, action, bal=False):
 
 def step(s_idx, state, a):
     if a == 0:  # i.e hold
-        res_pos = state[-2]
+        res_pos = state[-1]
     if a == 1:  # i.e buy
         res_pos = 1
     if a == 2:  # i.e sell
@@ -199,12 +198,6 @@ def get_invalid_action(curr_pos):
         return 2  # can't sell
 
 
-"""
-right now 100 episodes are done
-wherein:
-    starting from the beginning of the set
-    an action is picked either randomly or by choosing the best option
-"""
 
 epsilon = 0.2
 alpha = 0.5  # alpha is the learning rate
